@@ -30,7 +30,9 @@ if cfg.FLAGS.isbc is False:
 if __name__ == '__main__':
 
     ######Pre-processing====================================================================================
-    depth, hmap = tf_reader('training.tfrecords1')
+    batch_x, batch_y, batch_x_orig = prep.read_batch_cpm(cfg.FLAGS.TFrecords_dir, FLAGS.tfr_data_files, FLAGS.input_size,
+                                                                      FLAGS.heatmap_size, FLAGS.num_of_joints,
+                                                                      FLAGS.center_radius, FLAGS.batch_size)
 
     #    print('Reading Batch=====================================================================================')
     #

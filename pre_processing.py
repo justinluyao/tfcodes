@@ -9,7 +9,8 @@ import cv2
 # import file reader
 import data_reader_write.tf_data_producer as tf_data
 
-def generate_mini_batch(tfr_path, num_epochs, ):
+def generate_mini_batch(tfr_path, num_epochs, heatmap_size, num_of_classes,center_radius, batch_size):
+
 
     with tf.name_scope('Batch_Inputs'):
         tfr_queue = tf.train.string_input_producer(tfr_path, num_epochs=num_epochs, shuffle=True)
@@ -40,7 +41,6 @@ def read_and_decode():
     queue_labels = []
     queue_orig_images = []
 
-    for i in range(2):
         features = tf.parse_single_example(serialized_example,
                                            features={
                                                'image': tf.FixedLenFeature([], tf.string),
@@ -126,3 +126,27 @@ def read_and_decode():
     return queue_images, queue_center_maps, queue_labels, queue_orig_images
     # return preprocessed_img, preprocessed_center_maps, preprocessed_heatmaps, img
 
+import configs.config as cfg
+
+
+# reading the tfrecords file
+def tf_reader(tfrecords):
+    filename_queue = tf.train.string_input_producer([tfrecords],num_epochs=num_epochs, shuffle=True)
+    # create a reader from file queue
+    reader = tf.TFRecordReader()
+    _, serialized_example = reader.read(filename_queue)
+    # get feature from serialized example
+    features = tf.parse_single_example(serialized_example, features={
+        'input_data': tf.FixedLenFeature([], tf.string),
+        'label_data': tf.FixedLenFeature([], tf.string)
+    })
+    input_data = features['input_data']
+    label_data = features['label_data']
+    input_data = tf.decode_raw(input_data, tf.float32)
+    label_data = tf.decode_raw(label_data, tf.float32)
+
+    input_data = tf.reshape(input_data, [cfg.FLAGS.input_height, cfg.FLAGS.input_width, cfg.FLAGS.input_dims])
+    label_data = tf.reshape(label_data, [cfg.FLAGS.hmap_height, cfg.FLAGS.hmap_width, cfg.FLAGS.output_dim])
+    print('reading data from TFrecords')
+
+    return input_data, label_data
